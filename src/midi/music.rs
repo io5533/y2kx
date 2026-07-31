@@ -1,0 +1,263 @@
+use std::ops::RangeBounds;
+use rand::seq::SliceRandom;
+
+use midly::{
+    Smf,
+    Timing,
+    MetaMessage,
+    MidiMessage,
+    Track,
+    TrackEventKind,
+};
+
+use super::tempo::TempoMap;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Note {
+    pub time_ms: u64,
+    pub pitch: u8,
+}
+
+impl Note {
+    pub fn new(time_ms: u64, pitch: u8) -> Self {
+        Self { time_ms, pitch }
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct TrackData {
+    pub name: String,
+    pub notes: Vec<Note>,
+}
+
+impl TrackData {
+
+    pub fn new(name: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            notes: Vec::new(),
+        }
+    }
+
+    pub fn sort(&mut self) {
+        self.notes.sort_unstable_by_key(|note| note.time_ms);
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct Music {
+    tracks: Vec<TrackData>
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum NoteOrder {
+    LowToHigh,
+    HighToLow,
+    Random,
+}
+
+impl Music {
+    // Constructors
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn from_smf(
+        smf: &Smf,
+    ) -> Result<Self, &'static str> {
+        Self::from_smf_range(smf, 0..=255)
+    }
+
+    pub fn from_smf_range<R>(smf: &Smf, range: R) -> Result<Music, &'static str>
+    where
+        R: RangeBounds<u8>,
+    {
+        let ppqn = get_ppqn(smf)?;
+        let tempo_map = TempoMap::from_smf(smf)?;
+
+        let mut music = Music::new();
+
+        for track in &smf.tracks {
+            music.tracks.push(read_track(
+                track,
+                &tempo_map,
+                ppqn,
+                &range,
+            ));
+        }
+
+        Ok(music)
+    }
+
+    // Track management
+    pub fn add_track(&mut self, track: TrackData) {
+        self.tracks.push(track);
+    }
+
+    pub fn remove_other_tracks(&mut self, index: usize) -> Result<(), &'static str> {
+        if index >= self.tracks.len() {
+            return Err("Track index out of range");
+        }
+
+        let track = self.tracks.swap_remove(index);
+        self.tracks = vec![track];
+        Ok(())
+    }
+
+    // Processing
+    pub fn sort(&mut self) {
+        for track in &mut self.tracks {
+            track.sort();
+        }
+    }
+
+
+    pub fn apply_arpeggio(&mut self, ms: u16, order: NoteOrder) {
+        for track in &mut self.tracks {
+            apply_arpeggio(&mut track.notes, ms, order);
+        }
+    }
+
+    // Accessors
+    pub fn tracks(&self) -> &[TrackData] {
+        &self.tracks
+    }
+
+    pub fn tracks_mut(&self) -> &[TrackData] {
+        &self.tracks
+    }
+
+    pub fn get_mut_track(&mut self, index: usize) -> Result<&mut TrackData, &'static str> {
+        self.tracks
+            .get_mut(index)
+            .ok_or("Track index out of range")
+    }
+
+    pub fn get_mut_notes(&mut self, index: usize) -> Result<&mut Vec<Note>, &'static str> {
+       Ok(&mut self.get_mut_track(index)?.notes)
+    }
+}
+
+// -----------------------------------------------------
+// Internal helpers
+// -----------------------------------------------------
+
+pub fn get_ppqn(smf: &Smf) -> Result<u64, &'static str> {
+    match smf.header.timing {
+        Timing::Metrical(t) => Ok(t.as_int() as u64),
+        _ => Err("SMPTE timing is not supported"),
+    }
+}
+
+
+fn read_track<R>(
+    track: &Track,
+    tempo_map: &TempoMap,
+    ppqn: u64,
+    range: &R,
+) -> TrackData
+where
+    R: RangeBounds<u8>,
+{
+    let mut current_tick = 0u64;
+    let mut tempo_cursor = 0usize;
+
+    let mut out = TrackData::new("");
+
+    for event in track {
+        current_tick += event.delta.as_int() as u64;
+
+        match event.kind {
+            TrackEventKind::Meta(MetaMessage::TrackName(name)) => {
+                out.name = String::from_utf8_lossy(name).into_owned();
+            }
+
+            TrackEventKind::Midi { message, .. } => {
+                if let MidiMessage::NoteOn { key, vel } = message {
+                    if vel.as_int() == 0 {
+                        continue;
+                    }
+
+                    let pitch = key.as_int();
+
+                    if !range.contains(&pitch) {
+                        continue;
+                    }
+
+                    let time_ms = tempo_map.tick_to_ms(
+                        current_tick,
+                        ppqn,
+                        &mut tempo_cursor,
+                    );
+
+                    out.notes.push(Note::new(time_ms, pitch));
+                }
+            }
+
+            _ => {}
+        }
+    }
+
+    out
+}
+
+
+fn sort_note_group(notes: &mut [Note], order: NoteOrder) {
+    match order {
+        NoteOrder::LowToHigh => {
+            notes.sort_unstable_by_key(|n| n.pitch);
+        }
+
+        NoteOrder::HighToLow => {
+            notes.sort_unstable_by(|a, b| b.pitch.cmp(&a.pitch));
+        }
+
+        NoteOrder::Random => {
+            notes.shuffle(&mut rand::rng());
+        }
+    }
+}
+
+fn spread_notes(notes: &mut [Note], interval_ms: u16) {
+    if notes.len() < 2 {
+        return;
+    }
+
+    let interval = interval_ms as u64;
+
+    let mut prev_time = notes[0].time_ms;
+
+    for note in notes.iter_mut().skip(1) {
+        if note.time_ms < prev_time + interval {
+            note.time_ms = prev_time + interval;
+        }
+
+        prev_time = note.time_ms;
+    }
+}
+
+// public utility
+pub fn apply_arpeggio(
+    notes: &mut [Note],
+    interval_ms: u16,
+    order: NoteOrder,
+) {
+    if notes.len() < 2 {
+        return;
+    }
+
+    let mut begin = 0;
+
+    for i in 1..=notes.len() {
+        let end_of_group =
+            i == notes.len()
+            || notes[i].time_ms != notes[begin].time_ms;
+
+        if end_of_group {
+            sort_note_group(&mut notes[begin..i], order);
+            begin = i;
+        }
+    }
+
+    spread_notes(notes, interval_ms);
+}

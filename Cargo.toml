@@ -1,0 +1,23 @@
+[package]
+name = "y2kx"
+version = "0.1.0"
+edition = "2024"
+
+description = "Library for reading, writing, and compiling Y2KX files for the Yume 2kki Xylophone Automation Project."
+license = "GPL-3.0-or-later"
+readme = "README.md"
+categories = [
+    "multimedia::audio",
+    "encoding",
+]
+keywords = [
+    "y2kx",
+    "midi",
+    "yume2kki",
+    "xylophone",
+    "serializer",
+]
+
+[dependencies]
+midly = "0.5.3"
+rand = "0.10"
