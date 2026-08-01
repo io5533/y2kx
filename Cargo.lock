@@ -136,3 +136,31 @@ dependencies = [
  "midly",
  "rand",
 ]
+
+[[package]]
+name = "y2kx-compiler"
+version = "0.1.0"
+dependencies = [
+ "y2kx",
+]
+
+[[package]]
+name = "y2kx-decompiler"
+version = "0.1.0"
+dependencies = [
+ "y2kx",
+]
+
+[[package]]
+name = "y2kx-player"
+version = "0.1.0"
+dependencies = [
+ "y2kx",
+]
+
+[[package]]
+name = "y2kx-server"
+version = "0.1.0"
+dependencies = [
+ "y2kx",
+]

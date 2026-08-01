@@ -2,5 +2,9 @@
 resolver = "2"
 members = [
     "crates/y2kx",
+    "crates/y2kx-compiler",
+    "crates/y2kx-decompiler",
+    "crates/y2kx-player",
+    "crates/y2kx-server",
 ]
 

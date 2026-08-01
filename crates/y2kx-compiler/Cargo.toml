@@ -1,0 +1,7 @@
+[package]
+name = "y2kx-compiler"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+y2kx = { path = "../y2kx" }
