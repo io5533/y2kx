@@ -52,4 +52,8 @@ pub struct Args {
     /// Key press duration in milliseconds.
     #[arg(short, long, default_value_t = CompileOptions::default().click_len)]
     pub click: u16,
+
+    /// Merge all tracks
+    #[arg(short, long, default_value_t = false)]
+    pub merge_tracks: bool,
 }

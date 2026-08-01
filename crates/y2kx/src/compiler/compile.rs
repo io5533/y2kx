@@ -1,5 +1,5 @@
 use crate::file::{self, Action, Command, Y2kxFile};
-use crate::midi::music;
+use crate::midi::music::{self, TrackData};
 use super::note::Y2kxNote;
 
 /// Compile options.
@@ -9,6 +9,7 @@ pub struct CompileOptions {
     pub arpeggio: u16,
     pub arpeggio_order: music::NoteOrder,
     pub click_len: u16,
+    pub merge_tracks: bool,
 }
 
 impl Default for CompileOptions {
@@ -18,6 +19,7 @@ impl Default for CompileOptions {
             arpeggio: 60,
             arpeggio_order: music::NoteOrder::LowToHigh,
             click_len: 50,
+            merge_tracks: false
         }
     }
 }

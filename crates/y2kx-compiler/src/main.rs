@@ -14,7 +14,8 @@ fn main() {
         arpeggio: args.arpeggio,
         arpeggio_order: NoteOrder::from(args.order),
         click_len: args.click,
-        preparation_time: args.prepare
+        preparation_time: args.prepare,
+        merge_tracks: args.merge_tracks,
     };
 
 
