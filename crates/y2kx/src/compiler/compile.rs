@@ -15,9 +15,9 @@ impl Default for CompileOptions {
     fn default() -> Self {
         Self {
             preparation_time: 500,
-            arpeggio: 50,
+            arpeggio: 60,
             arpeggio_order: music::NoteOrder::LowToHigh,
-            click_len: 20,
+            click_len: 50,
         }
     }
 }
