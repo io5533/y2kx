@@ -1,7 +1,9 @@
+mod cli;
+
 use clap::Parser;
 
 use y2kx::{CompileOptions, NoteOrder, Music};
-use y2kx_compiler::cli::Args;
+use cli::Args;
 
 use midly::Smf;
 
