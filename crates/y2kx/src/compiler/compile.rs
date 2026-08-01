@@ -51,7 +51,26 @@ pub fn compile_with(
 ) -> Result<Y2kxFile, String> {
     validate_options(options)?;
 
-    let tracks = music.tracks();
+    let tracks: Vec<TrackData> = if options.merge_tracks {
+        let mut merged = TrackData::new("Merged");
+
+        for track in music.tracks() {
+            let mut track = track.clone();
+            track.sort();
+            merged.merge(&track);
+        }
+
+        vec![merged]
+    } else {
+        let mut tracks = music.tracks().to_vec();
+
+        for track in &mut tracks {
+            track.sort();
+        }
+
+        tracks
+    };
+    
 
     let mut notes = Vec::<Vec<music::Note>>::with_capacity(tracks.len());
     let mut names = Vec::<String>::with_capacity(tracks.len());

@@ -24,7 +24,7 @@ impl Note {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct TrackData {
     pub name: String,
     pub notes: Vec<Note>,
@@ -40,7 +40,40 @@ impl TrackData {
     }
 
     pub fn sort(&mut self) {
-        self.notes.sort_unstable_by_key(|note| note.time_ms);
+        self.notes.sort_unstable_by_key(|note| (note.time_ms, note.pitch));
+    }
+
+    pub fn merge(&mut self, other: &TrackData) {
+        let mut out = Vec::with_capacity(self.notes.len() + other.notes.len());
+
+        let mut i = 0;
+        let mut j = 0;
+
+        while i < self.notes.len() && j < other.notes.len() {
+            let a = &self.notes[i];
+            let b = &other.notes[j];
+
+            match (a.time_ms, a.pitch).cmp(&(b.time_ms, b.pitch)) {
+                std::cmp::Ordering::Less => {
+                    out.push(a.clone());
+                    i += 1;
+                }
+                std::cmp::Ordering::Greater => {
+                    out.push(b.clone());
+                    j += 1;
+                }
+                std::cmp::Ordering::Equal => {
+                    out.push(a.clone());
+                    i += 1;
+                    j += 1;
+                }
+            }
+        }
+
+        out.extend_from_slice(&self.notes[i..]);
+        out.extend_from_slice(&other.notes[j..]);
+
+        self.notes = out;
     }
 }
 
