@@ -100,7 +100,7 @@ impl Player {
                         },
                     Action::Up => {
                         up = !up;
-                        if z {
+                        if up {
                             self.keyboard.key_down(Keyboard::UP)?;
                         } else {
                             self.keyboard.key_up(Keyboard::UP)?;
@@ -108,7 +108,7 @@ impl Player {
                     },
                     Action::Down => {
                         down = !down;
-                        if z {
+                        if down {
                             self.keyboard.key_down(Keyboard::DOWN)?;
                         } else {
                             self.keyboard.key_up(Keyboard::DOWN)?;
@@ -116,7 +116,7 @@ impl Player {
                     },
                     Action::Left => {
                         left = !left;
-                        if z {
+                        if left {
                             self.keyboard.key_down(Keyboard::LEFT)?;
                         } else {
                             self.keyboard.key_up(Keyboard::LEFT)?;
@@ -124,7 +124,7 @@ impl Player {
                     },
                     Action::Right => {
                         right = !right;
-                        if z {
+                        if right {
                             self.keyboard.key_down(Keyboard::RIGHT)?;
                         } else {
                             self.keyboard.key_up(Keyboard::RIGHT)?;
