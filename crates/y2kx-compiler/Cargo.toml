@@ -5,3 +5,5 @@ edition = "2024"
 
 [dependencies]
 y2kx = { path = "../y2kx" }
+clap = { version = "4.6", features = [ "derive" ] }
+midly = "0.5.3"
