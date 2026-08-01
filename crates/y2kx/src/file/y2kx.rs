@@ -290,6 +290,14 @@ impl Y2kxFile {
         Ok(())
     }
 
+    pub fn keyframe(&self, index: usize) -> Result<(u32, &[Command]), &'static str> {
+        if index >= self.keyframe_count() {
+            Err("index is out of range")
+        } else {
+            Ok((self.delays[index], &self.commands[index]))
+        }
+    }
+
     pub fn add_command(&mut self, keyframe: usize, command: Command) -> Result<(), &'static str> {
         if keyframe >= self.keyframe_count() {
             Err("index is out of range")
