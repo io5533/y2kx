@@ -23,12 +23,12 @@ fn main() {
 
     let y2kx = y2kx::compile_with(&music, options).unwrap();
 
-    println!("[INFO] {} tracks:", y2kx.track_count());
+    println!("[INFO] {} track(s):", y2kx.track_count());
     for track in y2kx.tracks() {
         println!("[INFO] - {}",track.name);
     }
 
     std::fs::write(args.output, y2kx.to_bytes()).unwrap();
 
-    println!("[INFO] y2kx compiled and saved.");
+    println!("[INFO] y2kx is compiled and saved.");
 }
