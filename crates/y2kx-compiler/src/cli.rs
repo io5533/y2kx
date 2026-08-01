@@ -34,7 +34,7 @@ pub struct Args {
     /// input: MIDI (mid)
     pub input: String,
 
-    /// output: Y2KXq (y2kx)
+    /// output: Y2KX (y2kx)
     pub output: String,
 
     /// Time in milliseconds to wait before starting playback.
