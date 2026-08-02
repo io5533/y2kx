@@ -38,13 +38,17 @@ impl Keyboard {
             flags |= KEYEVENTF_EXTENDEDKEY;
         }
 
+        let scan = unsafe {
+            MapVirtualKeyW(key as u32, MAPVK_VK_TO_VSC)
+        } as u16;
+
         let input = INPUT {
             r#type: INPUT_KEYBOARD,
             Anonymous: INPUT_0 {
                 ki: KEYBDINPUT {
-                    wVk: VIRTUAL_KEY(key as u16),
-                    wScan: 0,
-                    dwFlags: flags,
+                    wVk: VIRTUAL_KEY(0),
+                    wScan: scan,
+                    dwFlags: flags | KEYEVENTF_SCANCODE,
                     time: 0,
                     dwExtraInfo: 0,
                 },
