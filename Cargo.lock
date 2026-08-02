@@ -558,6 +558,10 @@ dependencies = [
 [[package]]
 name = "y2kx-info"
 version = "0.1.0"
+dependencies = [
+ "clap",
+ "y2kx",
+]
 
 [[package]]
 name = "y2kx-player"
