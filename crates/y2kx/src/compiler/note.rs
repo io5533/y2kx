@@ -80,6 +80,14 @@ impl Y2kxNote {
             Err("Invaild pitch for y2kx")
         }
     }
+    pub fn to_note(&self) -> Option<music::Note> {
+        let pitch = self.get_pitch();
+        if 60 <= pitch && pitch <= 85 {
+            Some(music::Note::new(self.time_ms, pitch))
+        } else {
+            None
+        }
+    }
     pub fn get_next_best_from_note(&self, next_note: music::Note) -> Result<Self, &'static str> {
         let notes = Y2kxNote::from_note(next_note)?;
 

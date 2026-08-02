@@ -1,3 +1,4 @@
+use crate::ArrowKey;
 use crate::file::{self, Action, Command, Y2kxFile};
 use crate::midi::music::{self, TrackData};
 use super::note::Y2kxNote;
@@ -39,6 +40,92 @@ impl TimedKeyframe {
         debug_assert_eq!(self.time_ms, other.time_ms);
         self.commands.extend(other.commands);
     }
+}
+
+pub fn decompile(y2kx: &Y2kxFile) -> Result<music::Music, String> {
+    let mut out = music::Music::new();
+
+    let mut tracks: Vec<TrackData> = y2kx.tracks().iter().map(|track| music::TrackData::new(track.name.clone())).collect();
+
+    let mut u1 = vec![false; tracks.len()];
+    let mut u7 = vec![false; tracks.len()];
+    let mut u12 = vec![false; tracks.len()];
+    let mut up = vec![false; tracks.len()];
+    let mut down = vec![false; tracks.len()];
+    let mut left = vec![false; tracks.len()];
+    let mut right = vec![false; tracks.len()];
+
+    let mut current_time = 0_u64;
+    for i in 0..y2kx.delays().len() {
+        let keyframe: (u32, &[Command]) = y2kx.keyframe(i)?;
+
+        current_time += keyframe.0 as u64;
+
+        for command in keyframe.1 {
+            let command = command.into_u16().to_be_bytes();
+            let track_id = command[0] as usize;
+            let action: Action = Action::try_from(command[1])?;
+            
+            match action {
+                Action::PitchUp1 => u1[track_id-1] = !u1[track_id-1],
+                Action::PitchUp7 => u7[track_id-1] = !u7[track_id-1],
+                Action::PitchUp12 => u12[track_id-1] = !u12[track_id-1],
+                Action::Up => {
+                    up[track_id-1] = !up[track_id-1];
+                    if up[track_id-1] {
+                        if let Some(_note) = tracks[track_id-1].notes.last() {
+                            //
+                        } else {
+                            tracks[track_id-1].notes.push((Y2kxNote { time_ms: current_time, u1: u1[track_id-1], u7: u7[track_id-1], u12: u12[track_id-1], key: ArrowKey::Up }).to_note().ok_or("Invaild note.")?);
+                        }
+                    }
+                },
+                Action::Down => {
+                    down[track_id-1] = !down[track_id-1];
+                    if down[track_id-1] {
+                        if let Some(_note) = tracks[track_id-1].notes.last() {
+                            //
+                        } else {
+                            tracks[track_id-1].notes.push((Y2kxNote { time_ms: current_time, u1: u1[track_id-1], u7: u7[track_id-1], u12: u12[track_id-1], key: ArrowKey::Down }).to_note().ok_or("Invaild note.")?);
+                        }
+                    }
+                },
+                Action::Left => {
+                    left[track_id-1] = !left[track_id-1];
+                    if down[track_id-1] {
+                        if let Some(_note) = tracks[track_id-1].notes.last() {
+                            //
+                        } else {
+                            tracks[track_id-1].notes.push((Y2kxNote { time_ms: current_time, u1: u1[track_id-1], u7: u7[track_id-1], u12: u12[track_id-1], key: ArrowKey::Left }).to_note().ok_or("Invaild note.")?);
+                        }
+                    }
+                },
+                Action::Right => {
+                    right[track_id-1] = !right[track_id-1];
+                    if right[track_id-1] {
+                        if let Some(_note) = tracks[track_id-1].notes.last() {
+                            //
+                        } else {
+                            tracks[track_id-1].notes.push((Y2kxNote { time_ms: current_time, u1: u1[track_id-1], u7: u7[track_id-1], u12: u12[track_id-1], key: ArrowKey::Right }).to_note().ok_or("Invaild note.")?);
+                        }
+                    }
+                },
+            }
+        }
+
+        //let mut out_track = music::TrackData::new(track.name.clone());
+
+
+
+
+        //out.add_track(out_track);
+    }
+
+    for track in tracks {
+        out.add_track(track);
+    }
+
+    Ok(out)
 }
 
 /// Compile using default options.

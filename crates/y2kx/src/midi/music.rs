@@ -8,9 +8,36 @@ use midly::{
     MidiMessage,
     Track,
     TrackEventKind,
+
+    Format,
+    Header,
+    TrackEvent,
+    num::{u4, u7, u15, u24, u28},
 };
+use crate::CompileOptions;
+
 
 use super::tempo::TempoMap;
+
+
+/// Compile options.
+#[derive(Debug, Clone, Copy)]
+pub struct ToSmfOptions {
+    pub ppqn: u16,
+
+    pub tempo_us: u32,
+    pub note_len: u64,
+}
+
+impl Default for ToSmfOptions {
+    fn default() -> Self {
+        Self {
+            ppqn: 480,
+            tempo_us: 500_000, // 120 BPM
+            note_len: CompileOptions::default().click_len as u64
+        }
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Note {
@@ -168,6 +195,113 @@ impl Music {
 
     pub fn get_mut_notes(&mut self, index: usize) -> Result<&mut Vec<Note>, &'static str> {
        Ok(&mut self.get_mut_track(index)?.notes)
+    }
+
+
+    pub fn to_smf<'a>(&'a self, options: ToSmfOptions) -> Smf<'a> {
+        let mut tracks = Vec::new();
+
+        for (track_index, track) in self.tracks.iter().enumerate() {
+            let mut events: Vec<(u64, TrackEventKind<'a>)> = Vec::new();
+
+            // 첫 번째 트랙에만 템포 추가
+            if track_index == 0 {
+                events.push((
+                    0,
+                    TrackEventKind::Meta(
+                        MetaMessage::Tempo(u24::new(options.tempo_us))
+                    ),
+                ));
+            }
+
+            // 트랙 이름
+            events.push((
+                0,
+                TrackEventKind::Meta(
+                    MetaMessage::TrackName(
+                        track.name.clone().into_bytes().leak()
+                    ),
+                ),
+            ));
+
+            // 피아노
+            events.push((
+                0,
+                TrackEventKind::Midi {
+                    channel: u4::new(0),
+                    message: MidiMessage::ProgramChange {
+                        program: u7::new(0),
+                    },
+                },
+            ));
+
+            for note in &track.notes {
+                let tick =
+                    note.time_ms * options.ppqn as u64 * 1000 / options.tempo_us as u64;
+
+                let end_tick =
+                    (note.time_ms + options.note_len)
+                        * options.ppqn as u64
+                        * 1000
+                        / options.tempo_us as u64;
+
+                events.push((
+                    tick,
+                    TrackEventKind::Midi {
+                        channel: u4::new(0),
+                        message: MidiMessage::NoteOn {
+                            key: u7::new(note.pitch),
+                            vel: u7::new(100),
+                        },
+                    },
+                ));
+
+                events.push((
+                    end_tick,
+                    TrackEventKind::Midi {
+                        channel: u4::new(0),
+                        message: MidiMessage::NoteOff {
+                            key: u7::new(note.pitch),
+                            vel: u7::new(0),
+                        },
+                    },
+                ));
+            }
+
+            events.sort_unstable_by_key(|e| e.0);
+
+            let mut last_tick = 0u64;
+            let mut midi_track = Vec::new();
+
+            for (tick, kind) in events {
+                let delta = tick - last_tick;
+                last_tick = tick;
+
+                midi_track.push(TrackEvent {
+                    delta: u28::new(delta as u32),
+                    kind,
+                });
+            }
+
+            midi_track.push(TrackEvent {
+                delta: u28::new(0),
+                kind: TrackEventKind::Meta(MetaMessage::EndOfTrack),
+            });
+
+            tracks.push(midi_track);
+        }
+
+        Smf {
+            header: Header {
+                format: if tracks.len() <= 1 {
+                    Format::SingleTrack
+                } else {
+                    Format::Parallel
+                },
+                timing: Timing::Metrical(u15::new(options.ppqn)),
+            },
+            tracks,
+        }
     }
 }
 
