@@ -105,7 +105,7 @@ impl TrackData {
 
     pub fn apply_playback_speed(&mut self, speed: f64) {
         for note in &mut self.notes {
-            note.time_ms = (note.time_ms as f64 * speed) as u64;
+            note.time_ms = (note.time_ms as f64 / speed) as u64;
         }
     }
 }
