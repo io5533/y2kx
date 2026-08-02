@@ -31,8 +31,12 @@ pub struct Track {
     pub name: String,
 }
 impl Track {
-    pub fn new(name: &str) -> Self {
-        Self { name: name.into() }
+    pub fn new(name: &str) -> Result<Self, &'static str> {
+        if name.contains('\0') {
+            Err("track name cannot contain \\0.") // .replace('\0', "")
+        } else {
+            Ok(Self { name: name.into() })
+        }
     }
 }
 
@@ -384,7 +388,7 @@ impl Y2kxFile {
 
         for _ in 0..track_count {
             let name = Self::read_cstring(body)?;
-            self.add_track(Track::new(&name))?;
+            self.add_track(Track::new(&name)?)?;
         }
 
         Ok(())

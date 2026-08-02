@@ -311,7 +311,7 @@ fn build_file(
 
     // Instrument 목록 추가
     for name in track_names {
-        file.add_track(file::Track::new(name)).map_err(String::from)?;
+        file.add_track(file::Track::new(name)?).map_err(String::from)?;
     }
 
     let mut previous_time = 0_u64;
