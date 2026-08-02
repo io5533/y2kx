@@ -56,4 +56,8 @@ pub struct Args {
     /// Merge all tracks
     #[arg(short, long, default_value_t = false)]
     pub merge_tracks: bool,
+
+    /// Delete null chars('\0') in track name
+    #[arg(short, long, default_value_t = true)]
+    pub del_null: bool,
 }
