@@ -57,6 +57,10 @@ pub struct Args {
     #[arg(short, long, default_value_t = false)]
     pub merge_tracks: bool,
 
+    /// Playback speed
+    #[arg(short, long, default_value_t = 1_f64)]
+    pub speed: f64,
+
     /// Delete null chars('\0') in track name
     #[arg(short, long, default_value_t = true)]
     pub del_null: bool,

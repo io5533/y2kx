@@ -12,6 +12,7 @@ pub struct CompileOptions {
     pub click_len: u16,
     pub merge_tracks: bool,
     pub del_nullchar: bool,
+    pub play_speed: f64
 }
 
 impl Default for CompileOptions {
@@ -22,7 +23,8 @@ impl Default for CompileOptions {
             arpeggio_order: music::NoteOrder::LowToHigh,
             click_len: 50,
             merge_tracks: false,
-            del_nullchar: true
+            del_nullchar: true,
+            play_speed: 1_f64
         }
     }
 }
@@ -184,8 +186,7 @@ pub fn compile_with(
         let keyframes = emit_keyframes(
             track_index as u16 + 1,
             y2kx_notes,
-            options.preparation_time,
-            options.click_len,
+            options
         );
 
         merged_keyframes = merge_keyframes(
@@ -248,8 +249,7 @@ fn compile_track_notes(
 fn emit_keyframes(
     track_id: u16,
     notes: Vec<Y2kxNote>,
-    preparation_time: u16,
-    click_len: u16,
+    options: CompileOptions
 ) -> Vec<TimedKeyframe> {
     let mut keyframes = Vec::new();
 
@@ -269,7 +269,7 @@ fn emit_keyframes(
         // ---------------- BORN ----------------
         //
 
-        let perform_time = note.time_ms + preparation_time as u64;
+        let perform_time = (note.time_ms as f64 * options.play_speed) as u64 + options.preparation_time as u64;
 
         // Prevent the xylophone from closing.
         if perform_time.saturating_sub(birth_time) >= 3000 {
@@ -321,7 +321,7 @@ fn emit_keyframes(
         //
 
         pending_commands = vec![Command::new(track_id, note.key.to_y2kx())];
-        birth_time = perform_time + click_len as u64;
+        birth_time = perform_time + options.click_len as u64;
     }
 
     // Release the last pressed key.
