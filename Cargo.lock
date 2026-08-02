@@ -556,6 +556,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "y2kx-info"
+version = "0.1.0"
+
+[[package]]
 name = "y2kx-player"
 version = "0.1.0"
 dependencies = [
