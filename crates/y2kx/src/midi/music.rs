@@ -102,6 +102,12 @@ impl TrackData {
 
         self.notes = out;
     }
+
+    pub fn apply_playback_speed(&mut self, speed: f64) {
+        for note in &mut self.notes {
+            note.time_ms = (note.time_ms as f64 * speed) as u64;
+        }
+    }
 }
 
 #[derive(Debug, Default)]
@@ -273,6 +279,11 @@ impl Music {
                 timing: Timing::Metrical(u15::new(options.ppqn)),
             },
             tracks,
+        }
+    }
+    pub fn apply_playback_speed(&mut self, speed: f64) {
+        for track in &mut self.tracks {
+            track.apply_playback_speed(speed);
         }
     }
 }

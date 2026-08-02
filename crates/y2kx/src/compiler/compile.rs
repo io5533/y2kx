@@ -11,8 +11,7 @@ pub struct CompileOptions {
     pub arpeggio_order: music::NoteOrder,
     pub click_len: u16,
     pub merge_tracks: bool,
-    pub del_nullchar: bool,
-    pub play_speed: f64
+    pub del_nullchar: bool
 }
 
 impl Default for CompileOptions {
@@ -23,8 +22,7 @@ impl Default for CompileOptions {
             arpeggio_order: music::NoteOrder::LowToHigh,
             click_len: 50,
             merge_tracks: false,
-            del_nullchar: true,
-            play_speed: 1_f64
+            del_nullchar: true
         }
     }
 }
@@ -269,7 +267,7 @@ fn emit_keyframes(
         // ---------------- BORN ----------------
         //
 
-        let perform_time = (note.time_ms as f64 * options.play_speed) as u64 + options.preparation_time as u64;
+        let perform_time = note.time_ms + options.preparation_time as u64;
 
         // Prevent the xylophone from closing.
         if perform_time.saturating_sub(birth_time) >= 3000 {

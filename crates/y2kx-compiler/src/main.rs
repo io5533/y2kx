@@ -16,15 +16,15 @@ fn main() {
         click_len: args.click,
         preparation_time: args.prepare,
         merge_tracks: args.merge_tracks,
-        del_nullchar: args.del_null,
-        play_speed: args.speed,
+        del_nullchar: args.del_null
     };
 
 
     let data = std::fs::read(args.input).unwrap();
     let smf = Smf::parse(&data).unwrap();
 
-    let music = Music::from_smf_range(&smf, 60..=84).unwrap();
+    let mut music = Music::from_smf_range(&smf, 60..=84).unwrap();
+    music.apply_playback_speed(args.speed);
 
     let y2kx = y2kx::compile_with(&music, options).unwrap();
 
