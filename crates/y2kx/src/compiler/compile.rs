@@ -73,41 +73,41 @@ pub fn decompile(y2kx: &Y2kxFile) -> Result<music::Music, String> {
                 Action::Up => {
                     up[track_id-1] = !up[track_id-1];
                     if up[track_id-1] {
-                        if let Some(_note) = tracks[track_id-1].notes.last() {
+                    //    if let Some(_note) = tracks[track_id-1].notes.last() {
                             //
-                        } else {
+                    //    } else {
                             tracks[track_id-1].notes.push((Y2kxNote { time_ms: current_time, u1: u1[track_id-1], u7: u7[track_id-1], u12: u12[track_id-1], key: ArrowKey::Up }).to_note().ok_or("Invaild note.")?);
-                        }
+                    //    }
                     }
                 },
                 Action::Down => {
                     down[track_id-1] = !down[track_id-1];
                     if down[track_id-1] {
-                        if let Some(_note) = tracks[track_id-1].notes.last() {
+                    //    if let Some(_note) = tracks[track_id-1].notes.last() {
                             //
-                        } else {
+                    //    } else {
                             tracks[track_id-1].notes.push((Y2kxNote { time_ms: current_time, u1: u1[track_id-1], u7: u7[track_id-1], u12: u12[track_id-1], key: ArrowKey::Down }).to_note().ok_or("Invaild note.")?);
-                        }
+                    //    }
                     }
                 },
                 Action::Left => {
                     left[track_id-1] = !left[track_id-1];
-                    if down[track_id-1] {
-                        if let Some(_note) = tracks[track_id-1].notes.last() {
+                    if left[track_id-1] {
+                    //    if let Some(_note) = tracks[track_id-1].notes.last() {
                             //
-                        } else {
+                    //    } else {
                             tracks[track_id-1].notes.push((Y2kxNote { time_ms: current_time, u1: u1[track_id-1], u7: u7[track_id-1], u12: u12[track_id-1], key: ArrowKey::Left }).to_note().ok_or("Invaild note.")?);
-                        }
+                    //    }
                     }
                 },
                 Action::Right => {
                     right[track_id-1] = !right[track_id-1];
                     if right[track_id-1] {
-                        if let Some(_note) = tracks[track_id-1].notes.last() {
+                    //    if let Some(_note) = tracks[track_id-1].notes.last() {
                             //
-                        } else {
+                    //    } else {
                             tracks[track_id-1].notes.push((Y2kxNote { time_ms: current_time, u1: u1[track_id-1], u7: u7[track_id-1], u12: u12[track_id-1], key: ArrowKey::Right }).to_note().ok_or("Invaild note.")?);
-                        }
+                    //    }
                     }
                 },
             }

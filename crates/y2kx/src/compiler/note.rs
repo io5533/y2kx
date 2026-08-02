@@ -82,7 +82,7 @@ impl Y2kxNote {
     }
     pub fn to_note(&self) -> Option<music::Note> {
         let pitch = self.get_pitch();
-        if 60 <= pitch && pitch <= 85 {
+        if 60 <= pitch && pitch <= 84 {
             Some(music::Note::new(self.time_ms, pitch))
         } else {
             None

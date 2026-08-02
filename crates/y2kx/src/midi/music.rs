@@ -202,85 +202,61 @@ impl Music {
         let mut tracks = Vec::new();
 
         for (track_index, track) in self.tracks.iter().enumerate() {
-            let mut events: Vec<(u64, TrackEventKind<'a>)> = Vec::new();
+            // (tick, priority, event) — priority로 동일 tick에서 NoteOff가 NoteOn보다 먼저 오도록 보장
+            let mut events: Vec<(u64, u8, TrackEventKind<'a>)> = Vec::new();
 
-            // 첫 번째 트랙에만 템포 추가
             if track_index == 0 {
-                events.push((
-                    0,
-                    TrackEventKind::Meta(
-                        MetaMessage::Tempo(u24::new(options.tempo_us))
-                    ),
-                ));
+                events.push((0, 1, TrackEventKind::Meta(
+                    MetaMessage::Tempo(u24::new(options.tempo_us))
+                )));
             }
 
-            // 트랙 이름
-            events.push((
-                0,
-                TrackEventKind::Meta(
-                    MetaMessage::TrackName(
-                        track.name.clone().into_bytes().leak()
-                    ),
-                ),
-            ));
+            events.push((0, 1, TrackEventKind::Meta(
+                MetaMessage::TrackName(track.name.clone().into_bytes().leak())
+            )));
 
-            // 피아노
-            events.push((
-                0,
-                TrackEventKind::Midi {
-                    channel: u4::new(0),
-                    message: MidiMessage::ProgramChange {
-                        program: u7::new(0),
-                    },
-                },
-            ));
+            events.push((0, 1, TrackEventKind::Midi {
+                channel: u4::new(0),
+                message: MidiMessage::ProgramChange { program: u7::new(0) },
+            }));
 
-            for note in &track.notes {
-                let tick =
-                    note.time_ms * options.ppqn as u64 * 1000 / options.tempo_us as u64;
+            // 정렬이 안 되어 있을 수 있으니 로컬로 정렬해서 다음 노트 확인
+            let mut notes = track.notes.clone();
+            notes.sort_unstable_by_key(|n| (n.time_ms, n.pitch));
 
+            for (i, note) in notes.iter().enumerate() {
+                let tick = note.time_ms * options.ppqn as u64 * 1000 / options.tempo_us as u64;
+
+                // 다음 노트 시작 시각을 넘지 않도록 sustain 길이를 clamp
+                let end_ms = match notes.get(i + 1) {
+                    Some(next) => next.time_ms.min(note.time_ms + options.note_len),
+                    None => note.time_ms + options.note_len,
+                };
                 let end_tick =
-                    (note.time_ms + options.note_len)
-                        * options.ppqn as u64
-                        * 1000
-                        / options.tempo_us as u64;
+                    (end_ms * options.ppqn as u64 * 1000 / options.tempo_us as u64)
+                        .max(tick + 1); // 최소 1틱 보장
 
-                events.push((
-                    tick,
-                    TrackEventKind::Midi {
-                        channel: u4::new(0),
-                        message: MidiMessage::NoteOn {
-                            key: u7::new(note.pitch),
-                            vel: u7::new(100),
-                        },
-                    },
-                ));
+                events.push((tick, 2, TrackEventKind::Midi {
+                    channel: u4::new(0),
+                    message: MidiMessage::NoteOn { key: u7::new(note.pitch), vel: u7::new(100) },
+                }));
 
-                events.push((
-                    end_tick,
-                    TrackEventKind::Midi {
-                        channel: u4::new(0),
-                        message: MidiMessage::NoteOff {
-                            key: u7::new(note.pitch),
-                            vel: u7::new(0),
-                        },
-                    },
-                ));
+                events.push((end_tick, 0, TrackEventKind::Midi {
+                    channel: u4::new(0),
+                    message: MidiMessage::NoteOff { key: u7::new(note.pitch), vel: u7::new(0) },
+                }));
             }
 
-            events.sort_unstable_by_key(|e| e.0);
+            // sort_by_key(stable) + (tick, priority) 튜플 키로 tie-break 명확화
+            events.sort_by_key(|e| (e.0, e.1));
 
             let mut last_tick = 0u64;
             let mut midi_track = Vec::new();
 
-            for (tick, kind) in events {
+            for (tick, _prio, kind) in events {
                 let delta = tick - last_tick;
                 last_tick = tick;
-
-                midi_track.push(TrackEvent {
-                    delta: u28::new(delta as u32),
-                    kind,
-                });
+                midi_track.push(TrackEvent { delta: u28::new(delta as u32), kind });
             }
 
             midi_track.push(TrackEvent {
@@ -293,11 +269,7 @@ impl Music {
 
         Smf {
             header: Header {
-                format: if tracks.len() <= 1 {
-                    Format::SingleTrack
-                } else {
-                    Format::Parallel
-                },
+                format: if tracks.len() <= 1 { Format::SingleTrack } else { Format::Parallel },
                 timing: Timing::Metrical(u15::new(options.ppqn)),
             },
             tracks,
