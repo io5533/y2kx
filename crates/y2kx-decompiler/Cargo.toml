@@ -6,4 +6,6 @@ edition = "2024"
 license = "GPL-3.0-or-later"
 
 [dependencies]
+midly = "0.5.3"
 y2kx = { path = "../y2kx" }
+clap = { version = "4.6", features = [ "derive" ] }
