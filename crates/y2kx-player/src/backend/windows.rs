@@ -4,6 +4,7 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
     SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS,
     KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP, VIRTUAL_KEY, VK_DOWN, VK_LEFT, VK_RIGHT,
     VK_SHIFT, VK_UP, VK_X, VK_Z,
+    MapVirtualKeyW, KEYEVENTF_SCANCODE, MAPVK_VK_TO_VSC,
 };
 
 use super::KeyboardBackend;
