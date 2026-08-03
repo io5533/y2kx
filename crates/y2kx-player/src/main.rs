@@ -8,13 +8,51 @@ use player::Player;
 
 use cli::Args;
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Args = Args::parse();
 
+    println!("[INFO] Reading and parsing Y2KX file. (path: `{}`)", &args.input);
 
-    let data = std::fs::read(args.input).unwrap();
-    let file = Y2kxFile::from_bytes(&data).unwrap();
+    let data = match std::fs::read(&args.input) {
+        Ok(data) => data,
+        Err(error) => {
+            eprintln!("[ERROR] Could not read the file, `{}`.", &args.input);
+            eprintln!("[ERROR] This error can be caused by invaild permission or path.");
+            Err(error)?
+        },
+    };
+    let file = match Y2kxFile::from_bytes(&data) {
+        Ok(data) => data,
+        Err(error) => {
+            eprintln!("[ERROR] Could not parse the file into Y2KX. (path: `{}`)", &args.input);
+            eprintln!("[ERROR] This error can be caused by corrupted Y2KX file or y2kx-compiler's BUG.");
+            Err(error)?
+        },
+    };
 
-    let mut player = Player::new().unwrap();
-    player.play(&file, args.track, args.mode).unwrap();
+    println!("[INFO] Preparing the player.");
+
+    let mut player = match Player::new() {
+        Ok(data) => data,
+        Err(error) => {
+            eprintln!("[ERROR] Could not init `Player`.");
+            eprintln!("[ERROR] This error can be caused by invaild OS permission or y2kx-player's BUG.");
+            Err(error)?
+        },
+    };
+
+    println!("[INFO] Start playing the Y2KX file's track ID, `{}`.", args.track);
+    println!("[INFO] Title: {}", file.title());
+    println!("[INFO] Artist: {}", file.artist());
+
+    match player.play(&file, args.track, args.mode) {
+        Err(error) => {
+            eprintln!("[ERROR] An error occurred while playing.");
+            eprintln!("[ERROR] This error can be caused by invaild track ID, other OS error or y2kx-player's BUG.");
+            Err(error)?
+        },
+        _ => {},
+    };
+
+    Ok(())
 }
