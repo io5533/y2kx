@@ -1,5 +1,7 @@
 mod cli;
 
+use chrono::Local;
+
 use clap::Parser;
 
 use y2kx::{CompileOptions, NoteOrder, Music};
@@ -56,7 +58,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
     };
     if !args.no_metadata {
-        y2kx.set_description(format!("compiled with {:?}\nin ", options).as_str()).unwrap();
+        y2kx.set_description(format!("compiled with {:?}\nin {}", options, Local::now().to_rfc3339()).as_str()).unwrap();
     }
 
     println!("[INFO] the Y2KX file is compiled with {:?}", options);

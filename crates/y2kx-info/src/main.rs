@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Err(error)?
         },
     };
-
+    println!("");
     println!("Y2KX version {}", file.version());
     println!("title: {}", file.title());
     println!("artist: {}", file.artist());
@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("duration in ms: {}", duration);
 
     let track_names: Vec<String> = file.tracks().iter().map(|track| track.name.clone()).collect();
-    println!("tracks[{}]: \"{:?}\"", file.track_count(), track_names);
+    println!("tracks[{}]: {:?}", file.track_count(), track_names);
 
     Ok(())
 }
