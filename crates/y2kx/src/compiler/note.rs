@@ -77,7 +77,7 @@ impl Y2kxNote {
             }
             Ok(out.clone())
         } else {
-            Err("Invaild pitch for y2kx")
+            Err("Invaild pitch for y2kx.")
         }
     }
     pub fn to_note(&self) -> Option<music::Note> {

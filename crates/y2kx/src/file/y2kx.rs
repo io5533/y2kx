@@ -22,7 +22,7 @@ impl TryFrom<u8> for Action {
             4 => Ok(Action::Down),
             5 => Ok(Action::Left),
             6 => Ok(Action::Right),
-            _ => Err("Invaild action"),
+            _ => Err("Invaild action."),
         }
     }
 }
@@ -33,7 +33,7 @@ pub struct Track {
 impl Track {
     pub fn new(name: &str) -> Result<Self, &'static str> {
         if name.contains('\0') {
-            Err("track name cannot contain \\0.") // .replace('\0', "")
+            Err("Track name cannot contain '\\0'.") // .replace('\0', "")
         } else {
             Ok(Self { name: name.into() })
         }
@@ -93,7 +93,7 @@ impl Y2kxFile {
 
     pub fn new(version: u8) -> Result<Self, &'static str> {
         if version != 0 {
-            Err("Unsupported version")
+            Err("Unsupported version.")
         } else {
             Ok(Self { version, title: "".into(), artist: "".into(), description: "".into(), tracks: Vec::new(), delays: Vec::new(), commands: Vec::new() })
         }
@@ -101,11 +101,11 @@ impl Y2kxFile {
 
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, &'static str> {
         if bytes.len() < Self::HEADER_SIZE {
-            return Err("The file is too short");
+            return Err("The file is too short.");
         }
 
         if &bytes[..4] != Self::MAGIC {
-            return Err("Invalid magic");
+            return Err("Invalid magic.");
         }
 
         let version = bytes[4];
@@ -193,7 +193,7 @@ impl Y2kxFile {
     }
     pub fn set_title(&mut self, title: &str) -> Result<(), &'static str> {
         if title.contains('\0') {
-            Err("Cannot contain '\\0'")
+            Err("Title cannot contain '\\0'.")
         }else {
             self.title = title.into();
             Ok(())
@@ -205,7 +205,7 @@ impl Y2kxFile {
     }
     pub fn set_artist(&mut self, artist: &str) -> Result<(), &'static str> {
         if artist.contains('\0') {
-            Err("Cannot contain '\\0'")
+            Err("Artist cannot contain '\\0'.")
         }else {
             self.artist = artist.into();
             Ok(())
@@ -217,7 +217,7 @@ impl Y2kxFile {
     }
     pub fn set_description(&mut self, description: &str) -> Result<(), &'static str> {
         if description.contains('\0') {
-            Err("Cannot contain '\\0'")
+            Err("Description cannot contain '\\0'.")
         }else {
             self.description = description.into();
             Ok(())
@@ -238,7 +238,7 @@ impl Y2kxFile {
 
     pub fn add_track(&mut self, track: Track) -> Result<(), &'static str> {
         if self.tracks.len() >= 255 {
-            Err("tracks length max is 255")
+            Err("Cannot add more tracks then 255.")
         } else {
             self.tracks.push(track);
             Ok(())
@@ -296,7 +296,7 @@ impl Y2kxFile {
 
     pub fn keyframe(&self, index: usize) -> Result<(u32, &[Command]), &'static str> {
         if index >= self.keyframe_count() {
-            Err("index is out of range")
+            Err("Index is out of range.")
         } else {
             Ok((self.delays[index], &self.commands[index]))
         }
@@ -304,7 +304,7 @@ impl Y2kxFile {
 
     pub fn add_command(&mut self, keyframe: usize, command: Command) -> Result<(), &'static str> {
         if keyframe >= self.keyframe_count() {
-            Err("index is out of range")
+            Err("Index is out of range.")
         } else {
             self.validate_command(command)?;
             self.commands[keyframe].push(command);
@@ -314,7 +314,7 @@ impl Y2kxFile {
 
     pub fn set_delay(&mut self, keyframe: usize, delay: u32) -> Result<(), &'static str> {
         if keyframe >= self.keyframe_count() {
-            Err("index is out of range")
+            Err("Index is out of range.")
         } else {
             Self::validate_delay(delay)?;
             self.delays[keyframe] = delay;
@@ -324,7 +324,7 @@ impl Y2kxFile {
 
     pub fn remove_keyframe(&mut self, keyframe: usize) -> Result<(), &'static str> {
         if keyframe >= self.keyframe_count() {
-            Err("index is out of range")
+            Err("Index is out of range.")
         } else {
             self.delays.remove(keyframe);
             self.commands.remove(keyframe);
@@ -342,7 +342,7 @@ impl Y2kxFile {
     ) -> Result<(), &'static str> {
         let commands = command.into_u16().to_be_bytes();
         if commands[0] == 0 || commands[0] > self.track_count() {
-            return Err("invaild instrument");
+            return Err("Invaild track ID.");
         }
         Action::try_from(commands[1])?;
         Ok(())
@@ -352,7 +352,7 @@ impl Y2kxFile {
         delay: u32,
     ) -> Result<(), &'static str> {
         if delay > 0xFFFFFF as u32 {
-            Err("delay must be smaller then 0xFFFFFF")
+            Err("Delay must be smaller then `0xFFFFFF`.")
         } else {
             Ok(())
         }
@@ -378,7 +378,7 @@ impl Y2kxFile {
         body: &mut &[u8],
     ) -> Result<(), &'static str> {
         if body.is_empty() {
-            return Err("Unexpected end of file");
+            return Err("Unexpected end of file.");
         }
 
         let track_count = body[0] as usize;
@@ -402,7 +402,7 @@ impl Y2kxFile {
         while !body.is_empty() {
             // Delay (uint24)
             if body.len() < 3 {
-                return Err("Unexpected end of file");
+                return Err("Unexpected end of file.");
             }
 
             let delay =
@@ -416,7 +416,7 @@ impl Y2kxFile {
 
             loop {
                 if body.is_empty() {
-                    return Err("Unexpected end of file");
+                    return Err("Unexpected end of file.");
                 }
 
                 // Terminator
@@ -426,7 +426,7 @@ impl Y2kxFile {
                 }
 
                 if body.len() < 2 {
-                    return Err("Unexpected end of file");
+                    return Err("Unexpected end of file.");
                 }
 
                 let command = Command(

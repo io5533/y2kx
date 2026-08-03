@@ -162,7 +162,7 @@ impl Music {
 
     pub fn remove_other_tracks(&mut self, index: usize) -> Result<(), &'static str> {
         if index >= self.tracks.len() {
-            return Err("Track index out of range");
+            return Err("Track index out of range.");
         }
 
         let track = self.tracks.swap_remove(index);
@@ -295,7 +295,7 @@ impl Music {
 pub fn get_ppqn(smf: &Smf) -> Result<u64, &'static str> {
     match smf.header.timing {
         Timing::Metrical(t) => Ok(t.as_int() as u64),
-        _ => Err("SMPTE timing is not supported"),
+        _ => Err("SMPTE timing is not supported."),
     }
 }
 

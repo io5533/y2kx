@@ -28,7 +28,7 @@ impl Player {
         let mut left = false;
         let mut right = false;
         if file.track_count() < track_id {
-            return Err(std::io::Error::other("track_id must be 1..=255"));
+            return Err(std::io::Error::other("Track ID must be `1..=255`."));
         }
 
         for i in 0..file.keyframe_count() {

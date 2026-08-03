@@ -81,7 +81,7 @@ impl TempoMap {
 fn get_ppqn(smf: &Smf) -> Result<u64, &'static str> {
     match smf.header.timing {
         Timing::Metrical(t) => Ok(t.as_int() as u64),
-        _ => Err("SMPTE timing is not supported"),
+        _ => Err("SMPTE timing is not supported."),
     }
 }
 

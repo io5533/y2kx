@@ -205,7 +205,7 @@ fn validate_options(
     options: CompileOptions,
 ) -> Result<(), String> {
     if options.arpeggio <= options.click_len {
-        Err("arpeggio must be bigger then click_len.".into())
+        Err("Arpeggio must be bigger then click length.".into())
     } else {
         Ok(())
     }
