@@ -47,7 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     music.apply_playback_speed(args.speed);
 
-    let y2kx = match y2kx::compile_with(&music, options) {
+    let mut y2kx = match y2kx::compile_with(&music, options) {
         Ok(data) => data,
         Err(error) => {
             eprintln!("[ERROR] Could not compile MIDI(SMF) into Y2KX.");
@@ -55,8 +55,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Err(error)?
         },
     };
+    if !args.no_metadata {
+        y2kx.set_description(format!("compiled with {:?}\nin ", options).as_str()).unwrap();
+    }
 
-    println!("[INFO] the Y2KX file is compiled with options: {:?}", options);
+    println!("[INFO] the Y2KX file is compiled with {:?}", options);
     println!("[INFO] {} track(s):", y2kx.track_count());
     for track in y2kx.tracks() {
         println!("[INFO] - \"{}\"", track.name);

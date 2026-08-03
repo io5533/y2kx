@@ -60,4 +60,8 @@ pub struct Args {
     /// Playback speed
     #[arg(short, long, default_value_t = 1_f64)]
     pub speed: f64,
+
+    /// When this option is turned off, the compiler will write current date and compile options into Y2KX description.
+    #[arg(short, long, default_value_t = false)]
+    pub no_metadata: bool,
 }
