@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let data = match std::fs::read(&args.input) {
         Ok(data) => data,
         Err(error) => {
-            eprintln!("[ERROR] Could not read the file, `{}`.", &args.input);
+            eprintln!("[ERROR] Could not read the file.");
             eprintln!("[ERROR] This error can be caused by invaild permission or path.");
             Err(error)?
         },
@@ -24,7 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let file = match Y2kxFile::from_bytes(&data) {
         Ok(data) => data,
         Err(error) => {
-            eprintln!("[ERROR] Could not parse the file into Y2KX. (path: `{}`)", &args.input);
+            eprintln!("[ERROR] Could not parse the file into Y2KX.");
             eprintln!("[ERROR] This error can be caused by corrupted Y2KX file or y2kx-compiler's BUG.");
             Err(error)?
         },
