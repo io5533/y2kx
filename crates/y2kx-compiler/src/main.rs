@@ -16,7 +16,6 @@ fn main() {
         click_len: args.click,
         preparation_time: args.prepare,
         merge_tracks: args.merge_tracks,
-        del_nullchar: args.del_null
     };
 
 

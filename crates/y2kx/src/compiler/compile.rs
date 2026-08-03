@@ -10,8 +10,7 @@ pub struct CompileOptions {
     pub arpeggio: u16,
     pub arpeggio_order: music::NoteOrder,
     pub click_len: u16,
-    pub merge_tracks: bool,
-    pub del_nullchar: bool
+    pub merge_tracks: bool
 }
 
 impl Default for CompileOptions {
@@ -21,8 +20,7 @@ impl Default for CompileOptions {
             arpeggio: 60,
             arpeggio_order: music::NoteOrder::LowToHigh,
             click_len: 50,
-            merge_tracks: false,
-            del_nullchar: true
+            merge_tracks: false
         }
     }
 }
@@ -168,7 +166,7 @@ pub fn compile_with(
         let mut arpeggio_notes = track.notes.clone();
         music::apply_arpeggio(&mut arpeggio_notes, options.arpeggio, options.arpeggio_order);
         notes.push(arpeggio_notes);
-        names.push(if options.del_nullchar { track.name.clone().replace('\0',"") } else { track.name.clone() });
+        names.push(track.name.clone().replace('\0',""));
     }
 
 
