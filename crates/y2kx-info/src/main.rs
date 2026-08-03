@@ -20,5 +20,5 @@ fn main() {
     println!("duration in ms: {}", duration);
 
     let track_names: Vec<String> = file.tracks().iter().map(|track| track.name.clone()) .collect();
-    println!("tracks[{}]: {:?}", file.track_count(), track_names);
+    println!("tracks[{}]: \"{:?}\"", file.track_count(), track_names);
 }
